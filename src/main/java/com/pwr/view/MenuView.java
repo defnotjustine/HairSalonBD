@@ -17,7 +17,7 @@ public class MenuView {
         btnViewReservations = new JButton("Przegląd poprzednich rezerwacji");
         btnSearchVisit = new JButton("Wyszukiwanie wizyty");
 
-        panel.setLayout(new GridLayout(2, 1, 10, 10)); // Układ z 2 wierszami
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 20)); // Układ z 2 wierszami
         panel.add(btnViewReservations);
         panel.add(btnSearchVisit);
 
