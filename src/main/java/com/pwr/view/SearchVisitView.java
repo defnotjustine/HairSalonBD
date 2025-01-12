@@ -66,7 +66,7 @@ public class SearchVisitView {
             String service = tfService.getText().trim();
 
             searchResults.clear();
-            taAvailableSlots.setText(""); // Wyczyść pole tekstowe
+            taAvailableSlots.setText("");
 
             try (Connection conn = DatabaseConnection.getConnection()) {
                 String query = "SELECT v.visit_id, v.visit_date, v.visit_time, h.first_name AS hairdresser, s.service_name " +
@@ -100,7 +100,6 @@ public class SearchVisitView {
             String selectedNumber = tfReservationNumber.getText().trim();
             int visitId;
 
-            // Sprawdzenie, czy numer rezerwacji jest liczbą
             try {
                 visitId = Integer.parseInt(selectedNumber);
             } catch (NumberFormatException ex) {
@@ -108,45 +107,64 @@ public class SearchVisitView {
                 return;
             }
 
-            // Sprawdzenie, czy numer ID istnieje w bazie
+            String phoneNumber = null;
+            String password = null;
+
+            if (MenuView.getIsLoggedIn()) {
+                phoneNumber = LoginView.getPhoneNumber();
+                password = LoginView.getPassword();
+            } else {
+                phoneNumber = RegistrationView.getPhoneNumber();
+                password = RegistrationView.getPassword();
+            }
+
             try (Connection conn = DatabaseConnection.getConnection()) {
-                // Zapytanie do bazy, aby sprawdzić, czy wizyta z takim ID istnieje i ma status 'Free'
-                String checkQuery = "SELECT visit_id FROM visits WHERE visit_id = ? AND status = 'Free'";
-                PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
-                checkStmt.setInt(1, visitId);
-                ResultSet rs = checkStmt.executeQuery();
+                String clientQuery = "SELECT client_id FROM clients WHERE telephone_nr = ? AND password = ?";
+                PreparedStatement clientStmt = conn.prepareStatement(clientQuery);
+                clientStmt.setString(1, phoneNumber);
+                clientStmt.setString(2, password);
 
-                // Jeśli wynik jest pusty, oznacza to, że wizyta nie istnieje lub nie jest dostępna do rezerwacji
-                if (!rs.next()) {
-                    JOptionPane.showMessageDialog(frame, "Wizyta o podanym numerze nie istnieje lub nie jest dostępna do rezerwacji.");
-                    return;
-                }
+                ResultSet clientRs = clientStmt.executeQuery();
 
-                // Aktualizacja statusu wizyty na 'Scheduled'
-                String updateQuery = "UPDATE visits SET status = 'Scheduled' WHERE visit_id = ?";
-                PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
-                updateStmt.setInt(1, visitId);
-                int rowsAffected = updateStmt.executeUpdate();
+                if (clientRs.next()) {
+                    int clientId = clientRs.getInt("client_id");
 
-                // Jeśli wizyta została zaktualizowana
-                if (rowsAffected > 0) {
-                    JOptionPane.showMessageDialog(frame, "Rezerwacja pomyślnie potwierdzona!");
-                    new MenuView(); // Powrót do menu głównego
-                    frame.setVisible(false); // Ukrycie tego okna
+                    String checkQuery = "SELECT visit_id FROM visits WHERE visit_id = ? AND status = 'Free'";
+                    PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+                    checkStmt.setInt(1, visitId);
+                    ResultSet rs = checkStmt.executeQuery();
+
+                    if (!rs.next()) {
+                        JOptionPane.showMessageDialog(frame, "Wizyta o podanym numerze nie istnieje lub nie jest dostępna do rezerwacji.");
+                        return;
+                    }
+
+                    String updateQuery = "UPDATE visits SET status = 'Scheduled', client_id = ? WHERE visit_id = ?";
+                    PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+                    updateStmt.setInt(1, clientId);
+                    updateStmt.setInt(2, visitId);
+                    int rowsAffected = updateStmt.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        JOptionPane.showMessageDialog(frame, "Rezerwacja pomyślnie potwierdzona!");
+                        new MenuView();
+                        frame.setVisible(false);
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Wystąpił problem z rezerwacją.");
+                    }
+
                 } else {
-                    JOptionPane.showMessageDialog(frame, "Wystąpił problem z rezerwacją.");
+                    JOptionPane.showMessageDialog(frame, "Błędny numer telefonu lub hasło.");
                 }
-
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(frame, "Wystąpił błąd podczas rezerwacji.");
             }
         });
 
-
         btnBackToMenu.addActionListener(e -> {
-            new MenuView(); // Powrót do menu głównego
-            frame.setVisible(false); // Ukrycie tego okna
+            new MenuView();
+            frame.setVisible(false);
         });
     }
 }

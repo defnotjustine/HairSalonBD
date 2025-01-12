@@ -42,4 +42,5 @@ public class MenuView {
     public static void setIsLoggedIn(boolean status) {
         isLoggedIn = status;
     }
+
 }
