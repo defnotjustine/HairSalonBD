@@ -6,6 +6,7 @@ import java.awt.*;
 public class MenuView {
     private JButton btnViewReservations;
     private JButton btnSearchVisit;
+    private static boolean isLoggedIn = false;
 
     public MenuView() {
         JFrame frame = new JFrame("Wybór czynności");
@@ -33,5 +34,12 @@ public class MenuView {
             new SearchVisitView(); // Otwarcie okna wyszukiwania wizyty
             frame.setVisible(false); // Ukrycie głównego menu
         });
+    }
+    public static boolean getIsLoggedIn() {
+        return isLoggedIn;
+    }
+
+    public static void setIsLoggedIn(boolean status) {
+        isLoggedIn = status;
     }
 }

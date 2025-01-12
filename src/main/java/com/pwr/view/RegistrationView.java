@@ -8,8 +8,11 @@ import java.awt.*;
 
 
 public class RegistrationView extends JPanel{
-    private JTextField tfFirstName, tfLastName, tfEmail, tfTelephone;
-    private JPasswordField pfPassword;
+    private JTextField tfFirstName;
+    private JTextField tfLastName;
+    private JTextField tfEmail;
+    private static JTextField tfTelephone;
+    private static JPasswordField pfPassword;
     private JButton btnRegister;
     private JButton btnBack;
 
@@ -72,5 +75,12 @@ public class RegistrationView extends JPanel{
             new MainView(); // Powrót do okna głównego
             frame.setVisible(false); // Ukrywa okno rejestracji
         });
+    }
+    public static String getPhoneNumber() {
+        return tfTelephone.getText(); // Zwraca numer telefonu wprowadzony w polu
+    }
+
+    public static String getPassword() {
+        return new String(pfPassword.getPassword()); // Zwraca hasło wprowadzone w polu
     }
 }

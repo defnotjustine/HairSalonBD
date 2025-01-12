@@ -28,9 +28,17 @@ public class PrevReservationsView {
         frame.add(panel);
         frame.setVisible(true);
 
-        // Pobierz dane logowania (telefon, hasło) z LoginController
-        String phoneNumber = LoginView.getPhoneNumber();
-        String password = LoginView.getPassword();
+        String phoneNumber = null;
+        String password = null;
+
+        // Sprawdzenie, czy użytkownik jest zalogowany
+        if (MenuView.getIsLoggedIn()) {
+            phoneNumber = LoginView.getPhoneNumber(); // Pobieramy dane z logowania
+            password = LoginView.getPassword();
+        } else {
+            phoneNumber = RegistrationView.getPhoneNumber(); // Pobieramy dane z rejestracji
+            password = RegistrationView.getPassword();
+        }
 
         // Sprawdź, czy istnieje użytkownik o podanym numerze telefonu i haśle
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -75,5 +83,4 @@ public class PrevReservationsView {
         });
 
     }
-
 }

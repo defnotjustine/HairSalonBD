@@ -45,6 +45,7 @@ public class LoginView extends JPanel{
             String telephone = tfTelephone.getText();
             String password = new String(pfPassword.getPassword());
             if (LoginController.loginClient(telephone, password)) {
+                MenuView.setIsLoggedIn(true); // Ustawiamy stan logowania na true
                 JOptionPane.showMessageDialog(frame, "Zalogowano pomyślnie!");
                 new MenuView(); // Otwarcie okna wyboru czynności
                 frame.setVisible(false); // Ukrywa okno logowania
