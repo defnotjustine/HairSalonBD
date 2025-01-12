@@ -25,13 +25,13 @@ public class MenuView {
 
         // Akcje przycisków
         btnViewReservations.addActionListener(e -> {
-            // Akcja dla przeglądu poprzednich rezerwacji
-            JOptionPane.showMessageDialog(frame, "Tutaj będą poprzednie rezerwacje!");
+            new PrevReservationsView(); // Otwarcie okna przeglądu rezerwacji
+            frame.setVisible(false); // Ukrycie głównego menu
         });
 
         btnSearchVisit.addActionListener(e -> {
-            // Akcja dla wyszukiwania wizyty
-            JOptionPane.showMessageDialog(frame, "Tutaj można wyszukiwać wizyty!");
+            new SearchVisitView(); // Otwarcie okna wyszukiwania wizyty
+            frame.setVisible(false); // Ukrycie głównego menu
         });
     }
 }

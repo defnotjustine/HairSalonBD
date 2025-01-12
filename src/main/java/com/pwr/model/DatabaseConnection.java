@@ -18,6 +18,24 @@ public class DatabaseConnection {
         return DriverManager.getConnection("jdbc:mysql://localhost:3306/hair_salon", "root", "root");
     }
 
+    public int getClientId(String email) {
+        int clientId = -1;
+        String query = "SELECT client_id FROM clients WHERE email = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                clientId = rs.getInt("client_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return clientId;
+    }
+
     public void close() {
         try {
             if (connection != null) {

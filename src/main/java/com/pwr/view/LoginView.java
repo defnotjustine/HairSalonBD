@@ -13,8 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class LoginView extends JPanel{
-    private JTextField tfTelephone;
-    private JPasswordField pfPassword;
+    private static JTextField tfTelephone;
+    private static JPasswordField pfPassword;
     private JButton btnLogin;
     private JButton btnBack;
 
@@ -58,4 +58,12 @@ public class LoginView extends JPanel{
             frame.setVisible(false); // Ukrywa okno logowania
         });
     }
+    public static String getPhoneNumber() {
+        return tfTelephone.getText(); // Zwraca tekst wprowadzony w polu numeru telefonu
+    }
+
+    public static String getPassword() {
+        return new String(pfPassword.getPassword()); // Zwraca hasło wprowadzone w polu hasła
+    }
+
 }
