@@ -1,6 +1,7 @@
 package com.pwr.view;
 
 import com.pwr.model.DatabaseConnection;
+import com.pwr.model.Visit;
 
 import javax.swing.*;
 import java.awt.*;
@@ -68,18 +69,27 @@ public class SearchVisitView {
             taAvailableSlots.setText(""); // Wyczyść pole tekstowe
 
             try (Connection conn = DatabaseConnection.getConnection()) {
-                String query = "SELECT id, date, time, hairdresser, service FROM reservations WHERE date LIKE ? OR hairdresser LIKE ? OR service LIKE ?";
+                String query = "SELECT v.visit_id, v.visit_date, v.visit_time, h.first_name AS hairdresser, s.service_name " +
+                        "FROM visits v " +
+                        "JOIN hairdressers h ON v.hairdresser_id = h.hairdresser_id " +
+                        "JOIN services s ON v.service_id = s.service_id " +
+                        "WHERE v.status = 'Free' AND (" +
+                        "v.visit_date LIKE ? OR " +
+                        "h.first_name LIKE ? OR " +
+                        "s.service_name LIKE ?)";
+
                 PreparedStatement stmt = conn.prepareStatement(query);
                 stmt.setString(1, "%" + date + "%");
                 stmt.setString(2, "%" + hairdresser + "%");
                 stmt.setString(3, "%" + service + "%");
                 ResultSet rs = stmt.executeQuery();
 
-                int counter = 1;
                 while (rs.next()) {
-                    String result = counter++ + ". " + rs.getString("date") + ", " + rs.getString("time") + ", " + rs.getString("hairdresser") + ", " + rs.getString("service");
-                    searchResults.add(result);
-                    taAvailableSlots.append(result + "\n");
+                    int visitId = rs.getInt("visit_id");
+                    String visitDetails = visitId + ". " + rs.getString("visit_date") + ", " + rs.getString("visit_time") + ", " +
+                            rs.getString("hairdresser") + ", " + rs.getString("service_name");
+                    searchResults.add(String.valueOf(new Visit(visitId, visitDetails)));
+                    taAvailableSlots.append(visitDetails + "\n");
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -88,26 +98,51 @@ public class SearchVisitView {
 
         btnReserve.addActionListener(e -> {
             String selectedNumber = tfReservationNumber.getText().trim();
-            int number;
+            int visitId;
+
+            // Sprawdzenie, czy numer rezerwacji jest liczbą
             try {
-                number = Integer.parseInt(selectedNumber);
+                visitId = Integer.parseInt(selectedNumber);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(frame, "Wpisz poprawny numer rezerwacji.");
                 return;
             }
 
-            if (number < 1 || number > searchResults.size()) {
-                JOptionPane.showMessageDialog(frame, "Nieprawidłowy numer rezerwacji.");
-                return;
-            }
+            // Sprawdzenie, czy numer ID istnieje w bazie
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                // Zapytanie do bazy, aby sprawdzić, czy wizyta z takim ID istnieje i ma status 'Free'
+                String checkQuery = "SELECT visit_id FROM visits WHERE visit_id = ? AND status = 'Free'";
+                PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+                checkStmt.setInt(1, visitId);
+                ResultSet rs = checkStmt.executeQuery();
 
-            int confirm = JOptionPane.showConfirmDialog(frame, "Czy na pewno chcesz zarezerwować tę wizytę?", "Potwierdzenie rezerwacji", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                JOptionPane.showMessageDialog(frame, "Rezerwacja potwierdzona!");
-                new MenuView(); // Powrót do menu głównego
-                frame.setVisible(false); // Ukrycie tego okna
+                // Jeśli wynik jest pusty, oznacza to, że wizyta nie istnieje lub nie jest dostępna do rezerwacji
+                if (!rs.next()) {
+                    JOptionPane.showMessageDialog(frame, "Wizyta o podanym numerze nie istnieje lub nie jest dostępna do rezerwacji.");
+                    return;
+                }
+
+                // Aktualizacja statusu wizyty na 'Scheduled'
+                String updateQuery = "UPDATE visits SET status = 'Scheduled' WHERE visit_id = ?";
+                PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+                updateStmt.setInt(1, visitId);
+                int rowsAffected = updateStmt.executeUpdate();
+
+                // Jeśli wizyta została zaktualizowana
+                if (rowsAffected > 0) {
+                    JOptionPane.showMessageDialog(frame, "Rezerwacja pomyślnie potwierdzona!");
+                    new MenuView(); // Powrót do menu głównego
+                    frame.setVisible(false); // Ukrycie tego okna
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Wystąpił problem z rezerwacją.");
+                }
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Wystąpił błąd podczas rezerwacji.");
             }
         });
+
 
         btnBackToMenu.addActionListener(e -> {
             new MenuView(); // Powrót do menu głównego

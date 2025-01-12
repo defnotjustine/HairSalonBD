@@ -1,15 +1,19 @@
 package com.pwr.model;
 
 public class Visit {
-    private String visitDate;
-    private String serviceName;
-    private String hairdresserName;
+    private static int visitId;
+    private String visitDetails;
 
-    public Visit(String visitDate, String serviceName, String hairdresserName) {
-        this.visitDate = visitDate;
-        this.serviceName = serviceName;
-        this.hairdresserName = hairdresserName;
+    public Visit(int visitId, String visitDetails) {
+        this.visitId = visitId;
+        this.visitDetails = visitDetails;
     }
 
-    // Getters and setters...
+    public static int getVisitId() {
+        return visitId;
+    }
+
+    public String getVisitDetails() {
+        return visitDetails;
+    }
 }
