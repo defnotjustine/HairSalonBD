@@ -5,10 +5,7 @@ import com.pwr.model.Visit;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class SearchVisitView {
@@ -62,6 +59,7 @@ public class SearchVisitView {
 
         btnSearch.addActionListener(e -> {
             String date = tfDate.getText().trim();
+            Date date1 = Date.valueOf(date);
             String hairdresser = tfHairdresser.getText().trim();
             String service = tfService.getText().trim();
 
@@ -74,19 +72,19 @@ public class SearchVisitView {
                         "JOIN hairdressers h ON v.hairdresser_id = h.hairdresser_id " +
                         "JOIN services s ON v.service_id = s.service_id " +
                         "WHERE v.status = 'Free' AND (" +
-                        "v.visit_date LIKE ? OR " +
+                        "v.visit_date = ? OR " +
                         "h.first_name LIKE ? OR " +
-                        "s.service_name LIKE ?)";
+                        "s.service_name LIKE ?);";
 
                 PreparedStatement stmt = conn.prepareStatement(query);
-                stmt.setString(1, "%" + date + "%");
+                stmt.setDate(1, date1);
                 stmt.setString(2, "%" + hairdresser + "%");
                 stmt.setString(3, "%" + service + "%");
                 ResultSet rs = stmt.executeQuery();
 
                 while (rs.next()) {
                     int visitId = rs.getInt("visit_id");
-                    String visitDetails = visitId + ". " + rs.getString("visit_date") + ", " + rs.getString("visit_time") + ", " +
+                    String visitDetails = visitId + ". " + rs.getDate("visit_date") + ", " + rs.getString("visit_time") + ", " +
                             rs.getString("hairdresser") + ", " + rs.getString("service_name");
                     searchResults.add(String.valueOf(new Visit(visitId, visitDetails)));
                     taAvailableSlots.append(visitDetails + "\n");

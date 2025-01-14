@@ -1,9 +1,9 @@
 package com.pwr.view;
 
-import com.pwr.controller.LoginController;
 import com.pwr.model.DatabaseConnection;
 
 import javax.swing.*;
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,10 +13,10 @@ public class PrevReservationsView {
     public PrevReservationsView() {
         JFrame frame = new JFrame("Poprzednie rezerwacje");
         JPanel panel = new JPanel();
-        frame.setSize(400, 300);
+        frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JTextArea taReservations = new JTextArea(10, 30);
+        JTextArea taReservations = new JTextArea(15, 40);
         taReservations.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(taReservations);
 
@@ -31,16 +31,16 @@ public class PrevReservationsView {
         String phoneNumber = null;
         String password = null;
 
-        // Sprawdzenie, czy użytkownik jest zalogowany
+        // Check if the user is logged in
         if (MenuView.getIsLoggedIn()) {
-            phoneNumber = LoginView.getPhoneNumber(); // Pobieramy dane z logowania
+            phoneNumber = LoginView.getPhoneNumber(); // Get login details
             password = LoginView.getPassword();
         } else {
-            phoneNumber = RegistrationView.getPhoneNumber(); // Pobieramy dane z rejestracji
+            phoneNumber = RegistrationView.getPhoneNumber(); // Get registration details
             password = RegistrationView.getPassword();
         }
 
-        // Sprawdź, czy istnieje użytkownik o podanym numerze telefonu i haśle
+        // Verify if a user with the provided phone number and password exists
         try (Connection conn = DatabaseConnection.getConnection()) {
             String clientQuery = "SELECT client_id FROM clients WHERE telephone_nr = ? AND password = ?";
             PreparedStatement clientStmt = conn.prepareStatement(clientQuery);
@@ -52,10 +52,13 @@ public class PrevReservationsView {
             if (clientRs.next()) {
                 int clientId = clientRs.getInt("client_id");
 
-                // Pobierz rezerwacje tego klienta
-                String reservationsQuery = "SELECT visit_date, service_name FROM visits " +
-                        "JOIN services ON visits.service_id = services.service_id " +
-                        "WHERE client_id = ?";
+                // Fetch reservations for this client
+                String reservationsQuery =
+                        "SELECT v.visit_date, v.visit_time, s.service_name, s.price, h.first_name, h.last_name " +
+                                "FROM visits v " +
+                                "JOIN services s ON v.service_id = s.service_id " +
+                                "JOIN hairdressers h ON v.hairdresser_id = h.hairdresser_id " +
+                                "WHERE v.client_id = ?";
                 PreparedStatement reservationsStmt = conn.prepareStatement(reservationsQuery);
                 reservationsStmt.setInt(1, clientId);
 
@@ -63,8 +66,14 @@ public class PrevReservationsView {
 
                 if (reservationsRs.next()) {
                     do {
-                        taReservations.append(reservationsRs.getDate("visit_date") + ", " +
-                                reservationsRs.getString("service_name") + "\n");
+                        taReservations.append(
+                                "Data: " + reservationsRs.getDate("visit_date") +
+                                        ", Godzina: " + reservationsRs.getTime("visit_time") +
+                                        ", Usługa: " + reservationsRs.getString("service_name") +
+                                        ", Cena: " + reservationsRs.getDouble("price") + " zł" +
+                                        ", Fryzjer: " + reservationsRs.getString("first_name") + " " +
+                                        reservationsRs.getString("last_name") + "\n"
+                        );
                     } while (reservationsRs.next());
                 } else {
                     taReservations.append("Brak poprzednich rezerwacji.\n");
@@ -78,9 +87,8 @@ public class PrevReservationsView {
         }
 
         btnBackToMenu.addActionListener(e -> {
-            new MenuView(); // Powrót do menu głównego
-            frame.setVisible(false); // Ukrycie tego okna
+            new MenuView(); // Return to main menu
+            frame.setVisible(false); // Hide this window
         });
-
     }
 }
