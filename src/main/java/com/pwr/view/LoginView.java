@@ -42,15 +42,18 @@ public class LoginView extends JPanel{
 
         // Akcje przycisków
         btnLogin.addActionListener(e -> {
-            String telephone = tfTelephone.getText();
-            String password = new String(pfPassword.getPassword());
-            if (LoginController.loginClient(telephone, password)) {
-                MenuView.setIsLoggedIn(true); // Ustawiamy stan logowania na true
-                JOptionPane.showMessageDialog(frame, "Zalogowano pomyślnie!");
-                new MenuView(); // Otwarcie okna wyboru czynności
-                frame.setVisible(false); // Ukrywa okno logowania
-            } else {
-                JOptionPane.showMessageDialog(frame, "Błędne dane logowania.");
+            if (validateInput()) {
+                String telephone = tfTelephone.getText();
+                String password = new String(pfPassword.getPassword());
+
+                if (LoginController.loginClient(telephone, password)) {
+                    MenuView.setIsLoggedIn(true); // Ustawiamy stan logowania na true
+                    JOptionPane.showMessageDialog(frame, "Zalogowano pomyślnie!");
+                    new MenuView(); // Otwarcie okna wyboru czynności
+                    frame.setVisible(false); // Ukrywa okno logowania
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Błędne dane logowania.");
+                }
             }
         });
 
@@ -59,6 +62,24 @@ public class LoginView extends JPanel{
             frame.setVisible(false); // Ukrywa okno logowania
         });
     }
+
+    private boolean validateInput() {
+        String phone = tfTelephone.getText();
+        String password = new String(pfPassword.getPassword());
+
+        if (phone.isEmpty() || !phone.matches("\\d{9,15}")) {
+            JOptionPane.showMessageDialog(this, "Numer telefonu musi zawierać od 9 do 15 cyfr.");
+            return false;
+        }
+
+        if (password.isEmpty() || password.length() < 5) {
+            JOptionPane.showMessageDialog(this, "Hasło musi mieć co najmniej 5 znaków.");
+            return false;
+        }
+
+        return true;
+    }
+
     public static String getPhoneNumber() {
         return tfTelephone.getText(); // Zwraca tekst wprowadzony w polu numeru telefonu
     }
