@@ -59,9 +59,14 @@ public class SearchVisitView {
 
         btnSearch.addActionListener(e -> {
             String date = tfDate.getText().trim();
-            Date date1 = Date.valueOf(date);
             String hairdresser = tfHairdresser.getText().trim();
             String service = tfService.getText().trim();
+
+            // Sprawdzenie, czy wszystkie pola są wypełnione
+            if (date.isEmpty() || hairdresser.isEmpty() || service.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Wypełnij wszystkie pola wyszukiwania.");
+                return;
+            }
 
             searchResults.clear();
             taAvailableSlots.setText("");
@@ -77,7 +82,7 @@ public class SearchVisitView {
                         "s.service_name LIKE ?);";
 
                 PreparedStatement stmt = conn.prepareStatement(query);
-                stmt.setDate(1, date1);
+                stmt.setDate(1, Date.valueOf(date));
                 stmt.setString(2, "%" + hairdresser + "%");
                 stmt.setString(3, "%" + service + "%");
                 ResultSet rs = stmt.executeQuery();
@@ -96,6 +101,13 @@ public class SearchVisitView {
 
         btnReserve.addActionListener(e -> {
             String selectedNumber = tfReservationNumber.getText().trim();
+
+            // Sprawdzenie, czy pole numeru rezerwacji jest wypełnione
+            if (selectedNumber.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Wpisz numer rezerwacji.");
+                return;
+            }
+
             int visitId;
 
             try {
@@ -159,6 +171,7 @@ public class SearchVisitView {
                 JOptionPane.showMessageDialog(frame, "Wystąpił błąd podczas rezerwacji.");
             }
         });
+
 
         btnBackToMenu.addActionListener(e -> {
             new MenuView();
