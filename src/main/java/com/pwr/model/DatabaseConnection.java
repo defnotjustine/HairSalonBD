@@ -7,7 +7,7 @@ public class DatabaseConnection {
     public DatabaseConnection() {
         try {
             this.connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/hair_salon", "root", "root");
+                    "jdbc:mysql://sql7.freesqldatabase.com:3306/sql7757775", "sql7757775", "GR7FQsFRaY");
         } catch (SQLException e) {
             e.printStackTrace();
             //throw new SQLException("Nie udało się połączyć z bazą danych");
@@ -15,7 +15,7 @@ public class DatabaseConnection {
     }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hair_salon", "root", "root");
+        return DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com:3306/sql7757775", "sql7757775", "GR7FQsFRaY");
     }
 
     public int getClientId(String email) {
