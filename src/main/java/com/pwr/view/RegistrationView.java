@@ -19,13 +19,13 @@ public class RegistrationView extends JPanel {
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        initializeUI(panel);
+        initializeUI(panel, frame);
 
         frame.add(panel);
         frame.setVisible(true);
     }
 
-    private void initializeUI(JPanel panel) {
+    private void initializeUI(JPanel panel, JFrame frame) {
         tfFirstName = new JTextField(15);
         tfLastName = new JTextField(15);
         tfEmail = new JTextField(15);
@@ -48,14 +48,14 @@ public class RegistrationView extends JPanel {
         panel.add(btnRegister);
         panel.add(btnBack);
 
-        btnRegister.addActionListener(e -> handleRegistration());
+        btnRegister.addActionListener(e -> handleRegistration(frame));
         btnBack.addActionListener(e -> {
             new MainView();
-            SwingUtilities.getWindowAncestor(panel).dispose();
+            frame.dispose();
         });
     }
 
-    private void handleRegistration() {
+    private void handleRegistration(JFrame frame) {
         String firstName = tfFirstName.getText();
         String lastName = tfLastName.getText();
         String email = tfEmail.getText();
@@ -67,7 +67,7 @@ public class RegistrationView extends JPanel {
             if (RegistrationController.registerClient(client)) {
                 JOptionPane.showMessageDialog(this, "Rejestracja zakończona sukcesem!");
                 new MenuView();
-                SwingUtilities.getWindowAncestor(this).dispose();
+                frame.dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Numer telefonu już istnieje.");
             }
@@ -75,6 +75,8 @@ public class RegistrationView extends JPanel {
             JOptionPane.showMessageDialog(this, "Wprowadź poprawne dane.");
         }
     }
+
+
 
     public static String getPhoneNumber() {
         return tfTelephone.getText();

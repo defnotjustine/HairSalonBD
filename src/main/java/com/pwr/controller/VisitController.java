@@ -20,6 +20,7 @@ public class VisitController {
                     "h.first_name LIKE ? OR " +
                     "s.service_name LIKE ?);";
 
+
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setDate(1, Date.valueOf(date));
             stmt.setString(2, "%" + hairdresser + "%");
