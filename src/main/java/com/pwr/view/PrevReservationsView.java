@@ -1,16 +1,15 @@
 package com.pwr.view;
 
-import com.pwr.model.DatabaseConnection;
-
+import com.pwr.controller.PrevReservationController;
 import javax.swing.*;
-import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class PrevReservationsView {
+    private PrevReservationController controller;
+
     public PrevReservationsView() {
+        controller = new PrevReservationController();
         JFrame frame = new JFrame("Poprzednie rezerwacje");
         JPanel panel = new JPanel();
         frame.setSize(500, 400);
@@ -31,64 +30,38 @@ public class PrevReservationsView {
         String phoneNumber = null;
         String password = null;
 
-        // Check if the user is logged in
         if (MenuView.getIsLoggedIn()) {
-            phoneNumber = LoginView.getPhoneNumber(); // Get login details
+            phoneNumber = LoginView.getPhoneNumber();
             password = LoginView.getPassword();
         } else {
-            phoneNumber = RegistrationView.getPhoneNumber(); // Get registration details
+            phoneNumber = RegistrationView.getPhoneNumber();
             password = RegistrationView.getPassword();
         }
 
-        // Verify if a user with the provided phone number and password exists
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String clientQuery = "SELECT client_id FROM clients WHERE telephone_nr = ? AND password = ?";
-            PreparedStatement clientStmt = conn.prepareStatement(clientQuery);
-            clientStmt.setString(1, phoneNumber);
-            clientStmt.setString(2, password);
+        int clientId = controller.getClientId(phoneNumber, password);
 
-            ResultSet clientRs = clientStmt.executeQuery();
-
-            if (clientRs.next()) {
-                int clientId = clientRs.getInt("client_id");
-
-                // Fetch reservations for this client
-                String reservationsQuery =
-                        "SELECT v.visit_date, v.visit_time, s.service_name, s.price, h.first_name, h.last_name " +
-                                "FROM visits v " +
-                                "JOIN services s ON v.service_id = s.service_id " +
-                                "JOIN hairdressers h ON v.hairdresser_id = h.hairdresser_id " +
-                                "WHERE v.client_id = ?";
-                PreparedStatement reservationsStmt = conn.prepareStatement(reservationsQuery);
-                reservationsStmt.setInt(1, clientId);
-
-                ResultSet reservationsRs = reservationsStmt.executeQuery();
-
-                if (reservationsRs.next()) {
-                    do {
-                        taReservations.append(
-                                "Data: " + reservationsRs.getDate("visit_date") +
-                                        ", Godzina: " + reservationsRs.getTime("visit_time") +
-                                        ", Usługa: " + reservationsRs.getString("service_name") +
-                                        ", Cena: " + reservationsRs.getDouble("price") + " zł" +
-                                        ", Fryzjer: " + reservationsRs.getString("first_name") + " " +
-                                        reservationsRs.getString("last_name") + "\n"
-                        );
-                    } while (reservationsRs.next());
-                } else {
-                    taReservations.append("Brak poprzednich rezerwacji.\n");
+        if (clientId != -1) {
+            ArrayList<Map<String, String>> reservations = controller.getPreviousReservations(clientId);
+            if (!reservations.isEmpty()) {
+                for (Map<String, String> res : reservations) {
+                    taReservations.append(
+                            "Data: " + res.get("date") +
+                                    ", Godzina: " + res.get("time") +
+                                    ", Usługa: " + res.get("service") +
+                                    ", Cena: " + res.get("price") + " zł" +
+                                    ", Fryzjer: " + res.get("hairdresser") + "\n"
+                    );
                 }
             } else {
-                taReservations.append("Błędny numer telefonu lub hasło.\n");
+                taReservations.append("Brak poprzednich rezerwacji.\n");
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            taReservations.append("Błąd połączenia z bazą danych.\n");
+        } else {
+            taReservations.append("Błędny numer telefonu lub hasło.\n");
         }
 
         btnBackToMenu.addActionListener(e -> {
-            new MenuView(); // Return to main menu
-            frame.setVisible(false); // Hide this window
+            new MenuView();
+            frame.setVisible(false);
         });
     }
 }

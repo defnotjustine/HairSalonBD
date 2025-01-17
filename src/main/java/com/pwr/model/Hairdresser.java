@@ -1,20 +1,25 @@
 package com.pwr.model;
 
 public class Hairdresser {
+    private int id;
     private String firstName;
     private String lastName;
-    private String specjalization;
+    private String specialization;
     private String telephone;
     private int experienceYears;
 
-    public Hairdresser(String firstName, String lastName, String specjalization, String telephone, int experienceYears) {
+    public Hairdresser(int id, String firstName, String lastName, String specialization, String telephone, int experienceYears) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.specjalization = specjalization;
+        this.specialization = specialization;
         this.telephone = telephone;
         this.experienceYears = experienceYears;
     }
 
+    public int getId() {
+        return id;
+    }
     public String getFirstName() {
         return firstName;
     }
@@ -31,12 +36,12 @@ public class Hairdresser {
         this.lastName = lastName;
     }
 
-    public String getSpecjalization() {
-        return specjalization;
+    public String getSpecialization() {
+        return specialization;
     }
 
-    public void setSpecjalization(String specjalization) {
-        this.specjalization = specjalization;
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
     }
 
     public String getTelephone() {

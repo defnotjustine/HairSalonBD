@@ -5,7 +5,6 @@ import com.pwr.model.Client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.regex.Pattern;
 
 public class RegistrationView extends JPanel {
     private JTextField tfFirstName;
@@ -13,8 +12,6 @@ public class RegistrationView extends JPanel {
     private JTextField tfEmail;
     private static JTextField tfTelephone;
     private static JPasswordField pfPassword;
-    private JButton btnRegister;
-    private JButton btnBack;
 
     public RegistrationView() {
         JFrame frame = new JFrame("Rejestracja");
@@ -22,13 +19,20 @@ public class RegistrationView extends JPanel {
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        initializeUI(panel);
+
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
+    private void initializeUI(JPanel panel) {
         tfFirstName = new JTextField(15);
         tfLastName = new JTextField(15);
         tfEmail = new JTextField(15);
         tfTelephone = new JTextField(15);
         pfPassword = new JPasswordField(15);
-        btnRegister = new JButton("Zarejestruj");
-        btnBack = new JButton("Powrót");
+        JButton btnRegister = new JButton("Zarejestruj");
+        JButton btnBack = new JButton("Powrót");
 
         panel.setLayout(new GridLayout(6, 2, 10, 10));
         panel.add(new JLabel("Imię:"));
@@ -44,68 +48,32 @@ public class RegistrationView extends JPanel {
         panel.add(btnRegister);
         panel.add(btnBack);
 
-        frame.add(panel);
-        frame.setVisible(true);
-
-        btnRegister.addActionListener(e -> {
-            if (validateInput()) {
-                Client client = new Client(
-                        tfFirstName.getText(),
-                        tfLastName.getText(),
-                        tfEmail.getText(),
-                        tfTelephone.getText(),
-                        new String(pfPassword.getPassword())
-                );
-
-                if (RegistrationController.registerClient(client)) {
-                    JOptionPane.showMessageDialog(frame, "Rejestracja zakończona sukcesem!");
-                    new MenuView();
-                    frame.setVisible(false);
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Numer telefonu już istnieje.");
-                }
-            }
-        });
-
+        btnRegister.addActionListener(e -> handleRegistration());
         btnBack.addActionListener(e -> {
             new MainView();
-            frame.setVisible(false);
+            SwingUtilities.getWindowAncestor(panel).dispose();
         });
     }
 
-    private boolean validateInput() {
+    private void handleRegistration() {
         String firstName = tfFirstName.getText();
         String lastName = tfLastName.getText();
         String email = tfEmail.getText();
         String phone = tfTelephone.getText();
         String password = new String(pfPassword.getPassword());
 
-        if (firstName.isEmpty() || !firstName.matches("[a-zA-Z]+")) {
-            JOptionPane.showMessageDialog(this, "Imię musi zawierać tylko litery.");
-            return false;
+        if (RegistrationController.validateClientData(firstName, lastName, email, phone, password)) {
+            Client client = new Client(firstName, lastName, email, phone, password);
+            if (RegistrationController.registerClient(client)) {
+                JOptionPane.showMessageDialog(this, "Rejestracja zakończona sukcesem!");
+                new MenuView();
+                SwingUtilities.getWindowAncestor(this).dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Numer telefonu już istnieje.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Wprowadź poprawne dane.");
         }
-
-        if (lastName.isEmpty() || !lastName.matches("[a-zA-Z]+")) {
-            JOptionPane.showMessageDialog(this, "Nazwisko musi zawierać tylko litery.");
-            return false;
-        }
-
-        if (email.isEmpty() || !Pattern.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$", email)) {
-            JOptionPane.showMessageDialog(this, "Wprowadź prawidłowy adres email.");
-            return false;
-        }
-
-        if (phone.isEmpty() || !phone.matches("\\d{9,15}")) {
-            JOptionPane.showMessageDialog(this, "Numer telefonu musi zawierać od 9 do 15 cyfr.");
-            return false;
-        }
-
-        if (password.isEmpty() || password.length() < 5) {
-            JOptionPane.showMessageDialog(this, "Hasło musi mieć co najmniej 5 znaków.");
-            return false;
-        }
-
-        return true;
     }
 
     public static String getPhoneNumber() {
