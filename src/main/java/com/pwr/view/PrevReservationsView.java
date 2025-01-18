@@ -45,11 +45,12 @@ public class PrevReservationsView {
             if (!reservations.isEmpty()) {
                 for (Map<String, String> res : reservations) {
                     taReservations.append(
-                            "Data: " + res.get("date") +
-                                    ", Godzina: " + res.get("time") +
-                                    ", Usługa: " + res.get("service") +
-                                    ", Cena: " + res.get("price") + " zł" +
-                                    ", Fryzjer: " + res.get("hairdresser") + "\n"
+                            "Data: " + res.get("date") + "\n" +
+                                    "Godzina: " + res.get("time") + "\n" +
+                                    "Usługa: " + res.get("service") + "\n" +
+                                    "Cena: " + res.get("price") + " zł\n" +
+                                    "Fryzjer: " + res.get("hairdresser") + "\n" +
+                                    "-------------------------------\n"
                     );
                 }
             } else {

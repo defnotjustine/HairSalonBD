@@ -60,17 +60,37 @@ public class SearchVisitView {
             String hairdresser = tfHairdresser.getText().trim();
             String service = tfService.getText().trim();
 
+            // Check if any fields are empty
             if (date.isEmpty() || hairdresser.isEmpty() || service.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Wypełnij wszystkie pola wyszukiwania.");
                 return;
             }
 
+            // Validate date format
+            if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                JOptionPane.showMessageDialog(frame, "Data musi być w formacie YYYY-MM-DD.");
+                return;
+            }
+
+            // Optional: Add validation for hairdresser and service names if needed
+            if (!hairdresser.matches("[a-zA-Z ]+") || !service.matches("[a-zA-Z ]+")) {
+                JOptionPane.showMessageDialog(frame, "Imię fryzjera i nazwa usługi mogą zawierać tylko litery.");
+                return;
+            }
+
             ArrayList<Visit> visits = controller.searchVisits(date, hairdresser, service);
             taAvailableSlots.setText("");
-            for (Visit visit : visits) {
-                taAvailableSlots.append(visit.getVisitDetails() + "\n");
+
+            if (visits.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Brak wizyt spełniających podane kryteria.");
+            } else {
+                for (Visit visit : visits) {
+                    taAvailableSlots.append(visit.getVisitDetails() + "\n");
+                }
             }
         });
+
+
 
         btnReserve.addActionListener(e -> {
             String selectedNumber = tfReservationNumber.getText().trim();
@@ -88,6 +108,23 @@ public class SearchVisitView {
                 return;
             }
 
+            // Check if the visitId exists in the list of available visits
+            boolean isValidVisitId = false;
+            String availableText = taAvailableSlots.getText();
+            String[] visitLines = availableText.split("\n");
+
+            for (String line : visitLines) {
+                if (line.startsWith(String.valueOf(visitId))) {
+                    isValidVisitId = true;
+                    break;
+                }
+            }
+
+            if (!isValidVisitId) {
+                JOptionPane.showMessageDialog(frame, "Wybierz wizytę z listy.");
+                return;
+            }
+
             String phoneNumber = MenuView.getIsLoggedIn() ? LoginView.getPhoneNumber() : RegistrationView.getPhoneNumber();
             String password = MenuView.getIsLoggedIn() ? LoginView.getPassword() : RegistrationView.getPassword();
 
@@ -98,6 +135,7 @@ public class SearchVisitView {
                 frame.setVisible(false);
             }
         });
+
 
         btnBackToMenu.addActionListener(e -> {
             new MenuView();
